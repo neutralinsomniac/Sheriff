@@ -21,3 +21,5 @@ exit
 all requirements can be found in:
 requirements.txt
 
+TODO LIST:
+1.) Active Directory authentication needs to be on use_ssl
