@@ -3,3 +3,4 @@ sheriff/keys
 /sheriff/LDAP3_reference
 */__pycache__
 *.log
+*.pyc
