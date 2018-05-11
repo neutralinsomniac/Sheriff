@@ -50,7 +50,7 @@ def agent_auth(transport, username):
         print('Trying ssh-agent key %s' % hexlify(key.get_fingerprint()))
         try:
             transport.auth_publickey(username, key)
-            print('... success!')
+            print('... success')
             return
         except paramiko.SSHException:
             print('... nope.')
