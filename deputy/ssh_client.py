@@ -43,6 +43,8 @@ def agent_auth(transport, username):
 
     agent = paramiko.Agent()
     agent_keys = agent.get_keys()
+    for i in agent_keys():
+        print(hexlify(i.get_fingerprint()))
     if len(agent_keys) == 0:
         return
 
