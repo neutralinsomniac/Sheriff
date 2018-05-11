@@ -44,8 +44,7 @@ def agent_auth(transport, username):
     agent = paramiko.Agent()
     agent_keys = agent.get_keys()
     if len(agent_keys) == 0:
-        print("Empty Key List!")
-	return
+        return
 
     for key in agent_keys:
         print('Trying ssh-agent key %s' % hexlify(key.get_fingerprint()))
