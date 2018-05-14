@@ -1,22 +1,3 @@
-# Copyright (C) 2003-2007  Robey Pointer <robeypointer@gmail.com>
-#
-# This file is part of paramiko.
-#
-# Paramiko is free software; you can redistribute it and/or modify it under the
-# terms of the GNU Lesser General Public License as published by the Free
-# Software Foundation; either version 2.1 of the License, or (at your option)
-# any later version.
-#
-# Paramiko is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-# A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
-# details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Paramiko; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
-
-
 import base64
 from binascii import hexlify
 import getpass
@@ -43,8 +24,6 @@ def agent_auth(transport, username):
 
     agent = paramiko.Agent()
     agent_keys = agent.get_keys()
-    for i in agent_keys():
-        print(hexlify(i.get_fingerprint()))
     if len(agent_keys) == 0:
         return
 
@@ -94,21 +73,8 @@ def manual_auth(username, hostname):
 # setup logging
 paramiko.util.log_to_file('demo.log')
 
-username = ''
-if len(sys.argv) > 1:
-    hostname = sys.argv[1]
-    if hostname.find('@') >= 0:
-        username, hostname = hostname.split('@')
-else:
-    hostname = input('Hostname: ')
-if len(hostname) == 0:
-    print('*** Hostname required.')
-    sys.exit(1)
-port = 22
-if hostname.find(':') >= 0:
-    hostname, portstr = hostname.split(':')
-    port = int(portstr)
-
+hostname = '192.168.184.157'
+port = 2200
 # now connect
 try:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -137,6 +103,7 @@ try:
 
     # check server's host key -- this is important.
     key = t.get_remote_server_key()
+    print(hexlify(key.get_fingerprint()))
     if hostname not in keys:
         print('*** WARNING: Unknown host key!')
     elif key.get_name() not in keys[hostname]:
@@ -148,11 +115,10 @@ try:
         print('*** Host key OK.')
 
     # get username
-    if username == '':
-        default_username = getpass.getuser()
-        username = input('Username [%s]: ' % default_username)
-        if len(username) == 0:
-            username = default_username
+    default_username = getpass.getuser()
+    username = input('Username [%s]: ' % default_username)
+    if len(username) == 0:
+        username = default_username
 
     agent_auth(t, username)
     if not t.is_authenticated():
