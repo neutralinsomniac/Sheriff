@@ -1,23 +1,3 @@
-# #!/usr/bin/env python
-
-# Copyright (C) 2003-2007  Robey Pointer <robeypointer@gmail.com>
-#
-# This file is part of paramiko.
-#
-# Paramiko is free software; you can redistribute it and/or modify it under the
-# terms of the GNU Lesser General Public License as published by the Free
-# Software Foundation; either version 2.1 of the License, or (at your option)
-# any later version.
-#
-# Paramiko is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-# A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
-# details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Paramiko; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
-
 import base64
 from binascii import hexlify
 import os
@@ -56,6 +36,7 @@ class Server (paramiko.ServerInterface):
             return paramiko.OPEN_SUCCEEDED
         return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
 
+    #TODO change this to use auth.py
     def check_auth_password(self, username, password):
         if (username == 'robey') and (password == 'foo'):
             return paramiko.AUTH_SUCCESSFUL
@@ -148,8 +129,8 @@ try:
         print('*** SSH negotiation failed.')
         sys.exit(1)
 
-    # wait for auth
-    chan = t.accept(20)
+    # wait for auth for 30 seconds
+    chan = t.accept(30)
     if chan is None:
         print('*** No channel.')
         sys.exit(1)
@@ -160,13 +141,10 @@ try:
         print('*** Client never asked for a shell.')
         sys.exit(1)
 
-    chan.send('\r\n\r\nWelcome to my dorky little BBS!\r\n\r\n')
-    chan.send('We are on fire all the time!  Hooray!  Candy corn for everyone!\r\n')
-    chan.send('Happy birthday to Robot Dave!\r\n\r\n')
-    chan.send('Username: ')
-    f = chan.makefile('rU')
-    username = f.readline().strip('\r\n')
-    chan.send('\r\nI don\'t like you, ' + username + '.\r\n')
+    chan.send('\r\n\r\nWelcome to Sheriff!\r\n\r\n')
+    #f = chan.makefile('rU')
+    #username = f.readline().strip('\r\n')
+    #chan.send('\r\nI don\'t like you, ' + username + '.\r\n')
     chan.close()
 
 except Exception as e:
