@@ -19,9 +19,29 @@ def build_search_base_string():
 #   username is a string containing the username
 #   password is a string containing the password
 #
-#   returns nothing if the user is not found
-#   returns a list of groups the user is a member of if user is found.
+# returns true if the user is found
+# returns false if the user is not
 def auth_user(username, password):
+    if(len(password) == 0):
+        return False
+    server = Server(ACTIVE_DIRECTORY_SERVER)
+    user = ACTIVE_DIRECTORY_SERVER + '\\' + username
+    conn = Connection(server, user, password, authentication=NTLM)
+    if(conn.bind()):
+        return True
+        # conn.search(build_search_base_string(),
+        #     '(sAMAccountName=%s)'%username,
+        #     attributes=['memberOf'])
+        # return conn.entries[0].memberOf
+    else:
+        return False
+
+# get_user_membership(username, password) where:
+#    username is a string containing the username
+#    password is a string containing the password
+#
+# Returns a tuple of membership groups
+def get_user_membership(username, password):
     server = Server(ACTIVE_DIRECTORY_SERVER)
     user = ACTIVE_DIRECTORY_SERVER + '\\' + username
     conn = Connection(server, user, password, authentication=NTLM)
@@ -30,5 +50,3 @@ def auth_user(username, password):
             '(sAMAccountName=%s)'%username,
             attributes=['memberOf'])
         return conn.entries[0].memberOf
-    else:
-        return None
