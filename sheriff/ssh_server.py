@@ -54,7 +54,6 @@ class Server (paramiko.ServerInterface):
         return True
 
 DoGSSAPIKeyExchange = True
-
 # now connect
 try:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -105,7 +104,8 @@ try:
         sys.exit(1)
 
     chan.send('\r\n\r\nWelcome to Sheriff!\r\n\r\n')
-    #TODO certificate stuff here
+
+
 
     chan.close()
 
