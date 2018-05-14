@@ -15,7 +15,7 @@ try:
 except ImportError:
     from . import interactive
 
-
+#Probably won't be used but necessary for ssh key auth
 def agent_auth(transport, username):
     """
     Attempt to authenticate to the given transport using any of the private
@@ -38,36 +38,8 @@ def agent_auth(transport, username):
 
 
 def manual_auth(username, hostname):
-    default_auth = 'p'
-    auth = input('Auth by (p)assword, (r)sa key, or (d)ss key? [%s] ' % default_auth)
-    if len(auth) == 0:
-        auth = default_auth
-
-    if auth == 'r':
-        default_path = os.path.join(os.environ['HOME'], '.ssh', 'id_rsa')
-        path = input('RSA key [%s]: ' % default_path)
-        if len(path) == 0:
-            path = default_path
-        try:
-            key = paramiko.RSAKey.from_private_key_file(path)
-        except paramiko.PasswordRequiredException:
-            password = getpass.getpass('RSA key password: ')
-            key = paramiko.RSAKey.from_private_key_file(path, password)
-        t.auth_publickey(username, key)
-    elif auth == 'd':
-        default_path = os.path.join(os.environ['HOME'], '.ssh', 'id_dsa')
-        path = input('DSS key [%s]: ' % default_path)
-        if len(path) == 0:
-            path = default_path
-        try:
-            key = paramiko.DSSKey.from_private_key_file(path)
-        except paramiko.PasswordRequiredException:
-            password = getpass.getpass('DSS key password: ')
-            key = paramiko.DSSKey.from_private_key_file(path, password)
-        t.auth_publickey(username, key)
-    else:
-        pw = getpass.getpass('Password for %s@%s: ' % (username, hostname))
-        t.auth_password(username, pw)
+    pw = getpass.getpass('Password for %s@%s: ' % (username, hostname))
+    t.auth_password(username, pw)
 
 
 # setup logging
@@ -120,9 +92,7 @@ try:
     if len(username) == 0:
         username = default_username
 
-    agent_auth(t, username)
-    if not t.is_authenticated():
-        manual_auth(username, hostname)
+    manual_auth(username, hostname)
     if not t.is_authenticated():
         print('*** Authentication failed. :(')
         t.close()
