@@ -1,3 +1,4 @@
+from auth import auth_user
 import base64
 from binascii import hexlify
 import os
@@ -9,15 +10,12 @@ import traceback
 import paramiko
 from paramiko.py3compat import b, u, decodebytes
 
-
 # setup logging
 paramiko.util.log_to_file('demo_server.log')
 
 host_key = paramiko.RSAKey(filename='./id_rsa')
-#host_key = paramiko.DSSKey(filename='test_dss.key')
 
 print('Read key: ' + u(hexlify(host_key.get_fingerprint())))
-
 
 class Server (paramiko.ServerInterface):
     # 'data' is the output of base64.b64encode(key)
@@ -36,42 +34,8 @@ class Server (paramiko.ServerInterface):
             return paramiko.OPEN_SUCCEEDED
         return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
 
-    #TODO change this to use auth.py
     def check_auth_password(self, username, password):
-        if (username == 'robey') and (password == 'foo'):
-            return paramiko.AUTH_SUCCESSFUL
-        return paramiko.AUTH_FAILED
-
-    def check_auth_publickey(self, username, key):
-        print('Auth attempt with key: ' + u(hexlify(key.get_fingerprint())))
-        if (username == 'robey') and (key == self.good_pub_key):
-            return paramiko.AUTH_SUCCESSFUL
-        return paramiko.AUTH_FAILED
-
-    def check_auth_gssapi_with_mic(self, username,
-                                   gss_authenticated=paramiko.AUTH_FAILED,
-                                   cc_file=None):
-        """
-        .. note::
-            We are just checking in `AuthHandler` that the given user is a
-            valid krb5 principal! We don't check if the krb5 principal is
-            allowed to log in on the server, because there is no way to do that
-            in python. So if you develop your own SSH server with paramiko for
-            a certain platform like Linux, you should call ``krb5_kuserok()`` in
-            your local kerberos library to make sure that the krb5_principal
-            has an account on the server and is allowed to log in as a user.
-        .. seealso::
-            `krb5_kuserok() man page
-            <http://www.unix.com/man-page/all/3/krb5_kuserok/>`_
-        """
-        if gss_authenticated == paramiko.AUTH_SUCCESSFUL:
-            return paramiko.AUTH_SUCCESSFUL
-        return paramiko.AUTH_FAILED
-
-    def check_auth_gssapi_keyex(self, username,
-                                gss_authenticated=paramiko.AUTH_FAILED,
-                                cc_file=None):
-        if gss_authenticated == paramiko.AUTH_SUCCESSFUL:
+        if(auth_user(username, password)):
             return paramiko.AUTH_SUCCESSFUL
         return paramiko.AUTH_FAILED
 
@@ -79,7 +43,7 @@ class Server (paramiko.ServerInterface):
         return True
 
     def get_allowed_auths(self, username):
-        return 'gssapi-keyex,gssapi-with-mic,password,publickey'
+        return 'password'
 
     def check_channel_shell_request(self, channel):
         self.event.set()
@@ -89,9 +53,7 @@ class Server (paramiko.ServerInterface):
                                   pixelheight, modes):
         return True
 
-
 DoGSSAPIKeyExchange = True
-
 # now connect
 try:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -129,7 +91,7 @@ try:
         print('*** SSH negotiation failed.')
         sys.exit(1)
 
-    # wait for auth for 30 seconds
+    # wait for auth for 30 secondsc
     chan = t.accept(30)
     if chan is None:
         print('*** No channel.')
@@ -142,9 +104,9 @@ try:
         sys.exit(1)
 
     chan.send('\r\n\r\nWelcome to Sheriff!\r\n\r\n')
-    #f = chan.makefile('rU')
-    #username = f.readline().strip('\r\n')
-    #chan.send('\r\nI don\'t like you, ' + username + '.\r\n')
+
+
+
     chan.close()
 
 except Exception as e:
