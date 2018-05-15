@@ -1,4 +1,4 @@
-from auth import auth_user
+from auth import auth_user, get_user_membership
 import base64
 from binascii import hexlify
 import os
@@ -20,6 +20,8 @@ print('Read key: ' + u(hexlify(host_key.get_fingerprint())))
 class Server (paramiko.ServerInterface):
     # 'data' is the output of base64.b64encode(key)
     # (using the "user_rsa_key" files)
+    user_permissions = {}
+
     data = (b'AAAAB3NzaC1yc2EAAAABIwAAAIEAyO4it3fHlmGZWJaGrfeHOVY7RWO3P9M7hp'
             b'fAu7jJ2d7eothvfeuoRFtJwhUmZDluRdFyhFY/hFAh76PJKGAusIqIQKlkJxMC'
             b'KDqIexkgHAfID/6mqvmnSJf0b5W8v5h2pI/stOSwTQ+pxVhwJ9ctYDhRSlF0iT'
@@ -29,13 +31,23 @@ class Server (paramiko.ServerInterface):
     def __init__(self):
         self.event = threading.Event()
 
+    def generate_cert(self, username, password):
+        permissions = get_user_membership(username, password)
+        print("Generating certificate for " + username + " who is a member of: ")
+        print(permissions)
+        return
+
     def check_channel_request(self, kind, chanid):
         if kind == 'session':
             return paramiko.OPEN_SUCCEEDED
         return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
 
     def check_auth_password(self, username, password):
+        print(username)
+        print(password)
+        print("attempting to log in")
         if(auth_user(username, password)):
+            self.generate_cert(username, password)
             return paramiko.AUTH_SUCCESSFUL
         return paramiko.AUTH_FAILED
 
@@ -104,8 +116,7 @@ try:
         sys.exit(1)
 
     chan.send('\r\n\r\nWelcome to Sheriff!\r\n\r\n')
-
-
+    chan.send(chan.get_name())
 
     chan.close()
 

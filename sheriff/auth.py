@@ -29,10 +29,6 @@ def auth_user(username, password):
     conn = Connection(server, user, password, authentication=NTLM)
     if(conn.bind()):
         return True
-        # conn.search(build_search_base_string(),
-        #     '(sAMAccountName=%s)'%username,
-        #     attributes=['memberOf'])
-        # return conn.entries[0].memberOf
     else:
         return False
 
