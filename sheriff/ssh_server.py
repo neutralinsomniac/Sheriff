@@ -13,7 +13,7 @@ from paramiko.py3compat import b, u, decodebytes
 # setup logging
 paramiko.util.log_to_file('demo_server.log')
 
-host_key = paramiko.RSAKey(filename='./id_rsa')
+host_key = paramiko.RSAKey(filename='../keys/id_rsa')
 
 print('Read key: ' + u(hexlify(host_key.get_fingerprint())))
 
