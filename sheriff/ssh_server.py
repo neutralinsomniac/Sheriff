@@ -1,132 +1,192 @@
-from auth import auth_user, get_user_membership
-from certify import create_certificate
-import base64
-from binascii import hexlify
 import os
-import socket
-import sys
-import threading
-import traceback
-
-import paramiko
-from paramiko.py3compat import b, u, decodebytes
+from paramiko import ServerInterface, SFTPServerInterface, SFTPServer, SFTPAttributes, \
+    SFTPHandle, SFTP_OK, AUTH_SUCCESSFUL, OPEN_SUCCEEDED
 
 
-# setup logging
-paramiko.util.log_to_file('demo_server.log')
+class StubServer (ServerInterface):
+    def check_auth_password(self, username, password):
+        # all are allowed
+        return AUTH_SUCCESSFUL
 
-host_key = paramiko.RSAKey(filename='../keys/id_rsa')
-
-print('Read key: ' + u(hexlify(host_key.get_fingerprint())))
-
-class Server (paramiko.ServerInterface):
-    # 'data' is the output of base64.b64encode(key)
-    # (using the "user_rsa_key" files)
-    user_permissions = {}
-
-    data = (b'AAAAB3NzaC1yc2EAAAABIwAAAIEAyO4it3fHlmGZWJaGrfeHOVY7RWO3P9M7hp'
-            b'fAu7jJ2d7eothvfeuoRFtJwhUmZDluRdFyhFY/hFAh76PJKGAusIqIQKlkJxMC'
-            b'KDqIexkgHAfID/6mqvmnSJf0b5W8v5h2pI/stOSwTQ+pxVhwJ9ctYDhRSlF0iT'
-            b'UWT10hcuO4Ks8=')
-    good_pub_key = paramiko.RSAKey(data=decodebytes(data))
-
-    def __init__(self):
-        self.event = threading.Event()
-
-    def generate_cert(self, username, password):
-        #permissions = get_user_membership(username, password)
-        create_certificate('root') #TODO change this to a user with appropriate permissions
-        return
+    def check_auth_publickey(self, username, key):
+        # all are allowed
+        return AUTH_SUCCESSFUL
 
     def check_channel_request(self, kind, chanid):
-        if kind == 'session':
-            return paramiko.OPEN_SUCCEEDED
-        return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
-
-    def check_auth_password(self, username, password):
-        print(username)
-        print(password)
-        print("attempting to log in")
-        if(auth_user(username, password)):
-            self.generate_cert(username, password)
-            return paramiko.AUTH_SUCCESSFUL
-        return paramiko.AUTH_FAILED
-
-    def enable_auth_gssapi(self):
-        return True
+        return OPEN_SUCCEEDED
 
     def get_allowed_auths(self, username):
-        return 'password'
+        """List availble auth mechanisms."""
+        return "password,publickey"
 
-    def check_channel_shell_request(self, channel):
-        self.event.set()
-        return True
 
-    def check_channel_pty_request(self, channel, term, width, height, pixelwidth,
-                                  pixelheight, modes):
-        return True
-
-while True:
-    DoGSSAPIKeyExchange = True
-    # now connect
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.bind(('', 2200))
-    except Exception as e:
-        print('*** Bind failed: ' + str(e))
-        traceback.print_exc()
-        #sys.exit(1)
-
-    try:
-        sock.listen(100)
-        print('Listening for connection ...')
-        client, addr = sock.accept()
-    except Exception as e:
-        print('*** Listen/accept failed: ' + str(e))
-        traceback.print_exc()
-        #sys.exit(1)
-
-    print('Got a connection!')
-
-    try:
-        t = paramiko.Transport(client, gss_kex=DoGSSAPIKeyExchange)
-        t.set_gss_host(socket.getfqdn(""))
+class StubSFTPHandle (SFTPHandle):
+    def stat(self):
         try:
-            t.load_server_moduli()
-        except:
-            print('(Failed to load moduli -- gex will be unsupported.)')
-            raise
-        t.add_server_key(host_key)
-        server = Server()
+            return SFTPAttributes.from_stat(os.fstat(self.readfile.fileno()))
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+
+    def chattr(self, attr):
+        # python doesn't have equivalents to fchown or fchmod, so we have to
+        # use the stored filename
         try:
-            t.start_server(server=server)
-        except paramiko.SSHException:
-            print('*** SSH negotiation failed.')
-            #sys.exit(1)
+            SFTPServer.set_file_attr(self.filename, attr)
+            return SFTP_OK
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
 
-        # wait for auth for 30 secondsc
-        chan = t.accept(30)
-        if chan is None:
-            print('*** No channel.')
-            #sys.exit(1)
-        print('Authenticated!')
 
-        server.event.wait(10)
-        if not server.event.is_set():
-            print('*** Client never asked for a shell.')
-            #sys.exit(1)
+class StubSFTPServer (SFTPServerInterface):
+    # assume current folder is a fine root
+    # (the tests always create and eventualy delete a subfolder, so there shouldn't be any mess)
+    ROOT = os.getcwd()
 
-        #chan.send('\r\n\r\nWelcome to Sheriff!\r\n\r\n')
-        #chan.send(chan.get_name())
+    def _realpath(self, path):
+        return self.ROOT + self.canonicalize(path)
 
-        chan.close()
-
-    except Exception as e:
-        print('*** Caught exception: ' + str(e.__class__) + ': ' + str(e))
-        traceback.print_exc()
+    def list_folder(self, path):
+        path = self._realpath(path)
         try:
-            t.close()
-        except:
-            pass
-        #sys.exit(1)
+            out = [ ]
+            flist = os.listdir(path)
+            for fname in flist:
+                attr = SFTPAttributes.from_stat(os.stat(os.path.join(path, fname)))
+                attr.filename = fname
+                out.append(attr)
+            return out
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+
+    def stat(self, path):
+        path = self._realpath(path)
+        try:
+            return SFTPAttributes.from_stat(os.stat(path))
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+
+    def lstat(self, path):
+        path = self._realpath(path)
+        try:
+            return SFTPAttributes.from_stat(os.lstat(path))
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+
+    def open(self, path, flags, attr):
+        path = self._realpath(path)
+        try:
+            binary_flag = getattr(os, 'O_BINARY',  0)
+            flags |= binary_flag
+            mode = getattr(attr, 'st_mode', None)
+            if mode is not None:
+                fd = os.open(path, flags, mode)
+            else:
+                # os.open() defaults to 0777 which is
+                # an odd default mode for files
+                fd = os.open(path, flags, 0o666)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        if (flags & os.O_CREAT) and (attr is not None):
+            attr._flags &= ~attr.FLAG_PERMISSIONS
+            SFTPServer.set_file_attr(path, attr)
+        if flags & os.O_WRONLY:
+            if flags & os.O_APPEND:
+                fstr = 'ab'
+            else:
+                fstr = 'wb'
+        elif flags & os.O_RDWR:
+            if flags & os.O_APPEND:
+                fstr = 'a+b'
+            else:
+                fstr = 'r+b'
+        else:
+            # O_RDONLY (== 0)
+            fstr = 'rb'
+        try:
+            f = os.fdopen(fd, fstr)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        fobj = StubSFTPHandle(flags)
+        fobj.filename = path
+        fobj.readfile = f
+        fobj.writefile = f
+        return fobj
+
+    def remove(self, path):
+        path = self._realpath(path)
+        try:
+            os.remove(path)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        return SFTP_OK
+
+    def rename(self, oldpath, newpath):
+        oldpath = self._realpath(oldpath)
+        newpath = self._realpath(newpath)
+        try:
+            os.rename(oldpath, newpath)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        return SFTP_OK
+
+    def mkdir(self, path, attr):
+        path = self._realpath(path)
+        try:
+            os.mkdir(path)
+            if attr is not None:
+                SFTPServer.set_file_attr(path, attr)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        return SFTP_OK
+
+    def rmdir(self, path):
+        path = self._realpath(path)
+        try:
+            os.rmdir(path)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        return SFTP_OK
+
+    def chattr(self, path, attr):
+        path = self._realpath(path)
+        try:
+            SFTPServer.set_file_attr(path, attr)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        return SFTP_OK
+
+    def symlink(self, target_path, path):
+        path = self._realpath(path)
+        if (len(target_path) > 0) and (target_path[0] == '/'):
+            # absolute symlink
+            target_path = os.path.join(self.ROOT, target_path[1:])
+            if target_path[:2] == '//':
+                # bug in os.path.join
+                target_path = target_path[1:]
+        else:
+            # compute relative to path
+            abspath = os.path.join(os.path.dirname(path), target_path)
+            if abspath[:len(self.ROOT)] != self.ROOT:
+                # this symlink isn't going to work anyway -- just break it immediately
+                target_path = '<error>'
+        try:
+            os.symlink(target_path, path)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        return SFTP_OK
+
+    def readlink(self, path):
+        path = self._realpath(path)
+        try:
+            symlink = os.readlink(path)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        # if it's absolute, remove the root
+        if os.path.isabs(symlink):
+            if symlink[:len(self.ROOT)] == self.ROOT:
+                symlink = symlink[len(self.ROOT):]
+                if (len(symlink) == 0) or (symlink[0] != '/'):
+                    symlink = '/' + symlink
+            else:
+                symlink = '<error>'
+        return symlink
