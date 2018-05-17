@@ -8,13 +8,12 @@ import paramiko
 
 from ssh_server import StubServer, StubSFTPServer
 
-HOST, PORT = 'localhost', 2200
+HOST, PORT = '192.168.184.157', 2200 # 0.0.0.0
 BACKLOG = 10
 
-
-def start_server(keyfile, level):
-    paramiko_level = getattr(paramiko.common, level)
-    paramiko.common.logging.basicConfig(level=paramiko_level)
+def start_server():
+    #paramiko_level = getattr(paramiko.common, level)
+    #paramiko.common.logging.basicConfig(level=paramiko_level)
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
@@ -22,9 +21,11 @@ def start_server(keyfile, level):
     server_socket.listen(BACKLOG)
 
     while True:
+        print('Waiting for Connection...')
         conn, addr = server_socket.accept()
+        print('Connection from ' + str(addr))
 
-        host_key = paramiko.RSAKey.from_private_key_file(keyfile)
+        host_key = paramiko.RSAKey.from_private_key_file('../keys/id_rsa')
         transport = paramiko.Transport(conn)
         transport.add_server_key(host_key)
         transport.set_subsystem_handler(
@@ -72,3 +73,4 @@ def start_server(keyfile, level):
 #
 # if __name__ == '__main__':
 #     main()
+start_server()

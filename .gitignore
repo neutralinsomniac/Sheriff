@@ -4,4 +4,4 @@ sheriff/keys
 */__pycache__
 *.log
 keys/*
-
+*.pyc

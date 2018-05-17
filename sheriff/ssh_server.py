@@ -1,12 +1,15 @@
 import os
+from auth import auth_user
 from paramiko import ServerInterface, SFTPServerInterface, SFTPServer, SFTPAttributes, \
-    SFTPHandle, SFTP_OK, AUTH_SUCCESSFUL, OPEN_SUCCEEDED
-
+    SFTPHandle, SFTP_OK, AUTH_SUCCESSFUL, OPEN_SUCCEEDED, AUTH_FAILED
+from certify import create_certificate
 
 class StubServer (ServerInterface):
     def check_auth_password(self, username, password):
-        # all are allowed
-        return AUTH_SUCCESSFUL
+        if(auth_user(username, password)):
+            create_certificate(username)
+            return AUTH_SUCCESSFUL
+        return AUTH_FAILED
 
     def check_auth_publickey(self, username, key):
         # all are allowed
@@ -16,8 +19,7 @@ class StubServer (ServerInterface):
         return OPEN_SUCCEEDED
 
     def get_allowed_auths(self, username):
-        """List availble auth mechanisms."""
-        return "password,publickey"
+        return "password"
 
 
 class StubSFTPHandle (SFTPHandle):
@@ -40,7 +42,10 @@ class StubSFTPHandle (SFTPHandle):
 class StubSFTPServer (SFTPServerInterface):
     # assume current folder is a fine root
     # (the tests always create and eventualy delete a subfolder, so there shouldn't be any mess)
-    ROOT = os.getcwd()
+    subpathes = os.getcwd().split('/')
+    ROOT = ''
+    for i in range(0, len(subpathes) - 1):
+        ROOT = ROOT + subpathes[i] + '/'
 
     def _realpath(self, path):
         return self.ROOT + self.canonicalize(path)
