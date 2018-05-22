@@ -5,3 +5,4 @@ sheriff/keys
 *.log
 keys/*
 *.pyc
+deputy/id_rsa.pub
