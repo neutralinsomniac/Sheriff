@@ -7,7 +7,6 @@ from certify import create_certificate
 class StubServer (ServerInterface):
     def check_auth_password(self, username, password):
         if(auth_user(username, password)):
-            create_certificate(username)
             return AUTH_SUCCESSFUL
         return AUTH_FAILED
 
