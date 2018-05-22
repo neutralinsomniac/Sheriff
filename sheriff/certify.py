@@ -7,4 +7,4 @@ import datetime
 #def create_certificate(membership, username):
 def create_certificate(username):
     call(['ssh-keygen', '-s', '../keys/host', '-I', username, '-n',
-        "root", '-V', '-1m:+30m', '../keys/id_rsa.pub'])
+        "root", '-V', '-1m:+30m', './tmp.pub'])

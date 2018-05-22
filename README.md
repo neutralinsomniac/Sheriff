@@ -85,3 +85,6 @@ What has to be done on the Client (1 and 2 handled by Deputy)
 		** make sure key pair is added with ssh-add <private-key>
 	2.) receive Cert and place it in ~/.ssh
 	3.) ssh into Host
+
+
+Config:
