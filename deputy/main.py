@@ -1,31 +1,23 @@
+#! ../env/bin/python3
 from create_keys import create_keys
 import paramiko
-import ssh_client
 import sys
-import os
-
-# def testCallback(sent, total):
-#     print('sent: ' + str(sent))
-#     print('total: ' + str(total))
 
 def main():
-    user = 'jack.daniels'#input("Username: ")
-    passwrd = 'Whi$key'#input("Password: ")
-    transport = paramiko.Transport(('192.168.184.157', 2200))
-    try:
-        transport.connect(username = user, password = passwrd)
-        sftp = paramiko.SFTPClient.from_transport(transport)
-        #public_key = create_keys()
-        sftp.put('./id_rsa.pub', '')
-        # file_name = '../keys/id_rsa-cert.pub'
-        # sftp.get(file_name, './id_rsa-cert.pub')
-        sftp.close()
-        transport.close()
-        return True
-    except Exception as e:
-        print(e)
-        sftp.close()
-        transport.close()
-        return False
+    username = sys.argv[1]
+    password = sys.argv[2]
+    private_key, public_key = create_keys()
+
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy)
+    client.load_system_host_keys()
+    # TODO make this authenticate with a keypair
+    client.connect('192.168.184.157', port=12345, username='shf', password='test',
+        allow_agent=False, look_for_keys=False)
+    stdin, stdout, stderr = client.exec_command('')
+    stdin.write(username + '\n')
+    stdin.write(password + '\n')
+    stdin.write(public_key)
+    client.close()
 
 main()

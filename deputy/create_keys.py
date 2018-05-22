@@ -22,17 +22,9 @@ def create_keys():
         crypto_serialization.PublicFormat.OpenSSH
     )
 
-    with open(homedir + '/.ssh/id_rsa', 'wb') as private_key:
-        private_key.write(privkey)
+    #ssh_add_new_key(homedir + '/.ssh/id_rsa')
 
-    chmod(homedir + '/.ssh/id_rsa', 0o600)
-
-    with open('./id_rsa.pub', 'wb') as public_key:
-        public_key.write(pubkey)
-
-    ssh_add_new_key(homedir + '/.ssh/id_rsa')
-
-    return './id_rsa.pub'
+    return privkey, pubkey
 
 def ssh_add_new_key(keypath):
     call(['ssh-add', keypath]) #Optional Silence: , '2>/dev/null'])
