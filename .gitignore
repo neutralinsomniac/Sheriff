@@ -6,4 +6,4 @@ sheriff/keys
 keys/*
 *.pyc
 deputy/id_rsa.pub
-sheriff/tmp.pub
+*.pub
