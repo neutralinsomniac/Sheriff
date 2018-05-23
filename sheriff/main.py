@@ -2,18 +2,20 @@
 from auth import auth_user
 import certify
 import os
+import getpass
 
 def main():
-    username = input()
-    password = input()
-    publicKey = input()
-    print(os.getcwd())
+    username = 'jack.daniels'#input()
+    password = 'Whi$key'#input()
+    publicKey = '12345'#input()
+    print(getpass.getuser())
     if(auth_user(username, password)):
-        with open('/home/sheriff/Desktop/Sheriff/sheriff/tmp.pub', 'w') as fl:
-            fl.write(str(publicKey))
-        certify.create_certificate(username)
+        with open(os.getcwd() + '/client_keys/test.txt', 'r') as fl:
+            print(fl.read())
+        # certify.create_certificate(username)
+        # with open(os.getcwd() + '/client_keys/temp-cert.pub', 'r') as cert:
+        #     print(cert.readlines()[0])
     else:
         print("Invalid username or password")
-
 
 main()
