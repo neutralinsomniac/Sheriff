@@ -7,3 +7,5 @@ keys/*
 *.pyc
 deputy/id_rsa.pub
 *.pub
+/CA_Keys/*
+/CA_Keys
