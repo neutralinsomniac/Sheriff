@@ -7,4 +7,5 @@ keys/*
 *.pyc
 deputy/id_rsa.pub
 *.pub
-/deputy/script.sh
+#/CA_Keys/*
+#/CA_Keys
