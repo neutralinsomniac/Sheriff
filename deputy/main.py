@@ -3,8 +3,8 @@ from create_keys import create_keys
 import paramiko
 
 def main():
-    username = 'jack.daniels' #input('Username: ')
-    password = 'Whi$key' #input('Password: ')
+    username = input('Username: ')
+    password = input('Password: ')
     private_key, public_key = create_keys()
 
     client = paramiko.SSHClient()
@@ -18,19 +18,22 @@ def main():
     stdin.write(password + '\n')
     stdin.write(str(public_key) + '\n')
     cert = stdout.readlines()
+    for i in cert:
+        print(i)
+        print('\n')
     client.close()
-    print('\n Public Key: ')
-    print(public_key)
-    print('\n Private Key: ')
-    print(private_key)
-    print('\n Certificate: ')
-    print(cert[0])
-    with open('id_rsa.pub', 'wb') as public_file:
-        public_file.write(public_key)
-    with open('id_rsa', 'wb') as private_file:
-        private_file.write(private_key)
-    with open('id_rsa-cert.pub', 'w') as cert_file:
-        cert_file.write(cert[0])
+    # print('\n Public Key: ')
+    # print(public_key)
+    # print('\n Private Key: ')
+    # print(private_key)
+    # print('\n Certificate: ')
+    # print(cert[0])
+    # with open('id_rsa.pub', 'wb') as public_file:
+    #     public_file.write(public_key)
+    # with open('id_rsa', 'wb') as private_file:
+    #     private_file.write(private_key)
+    # with open('id_rsa-cert.pub', 'w') as cert_file:
+    #     cert_file.write(cert[0])
 
 
 main()
