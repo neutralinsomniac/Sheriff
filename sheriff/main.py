@@ -1,8 +1,11 @@
 #! /usr/bin/env python3
 from auth import auth_user, get_user_membership
+from subprocess import call
 import certify
 import os, errno
 import getpass
+
+## IDEA: Log transactions for debugging and infomative purposes
 
 def main():
     username = input()
@@ -16,8 +19,8 @@ def main():
                 raise
     #TODO Error handling!
     if(auth_user(username, password)):
-        groups = get_user_membership()
-        if(len(groups) = 0):
+        groups = get_user_membership(username, password)
+        if(len(groups) == 0):
             print('User is not a member of any recognized groups')
             print('Either add user to group or update Sheriff Group List')
             return
@@ -26,7 +29,8 @@ def main():
         cert_list = certify.create_certificates(username, groups)
         for path in cert_list:
             with open(path, 'r') as cert:
-                print(cert.read())
+                print(cert.read(), end='')
+        call(['rm', '-rf', '/tmp/Sheriff_Public_Keys/'])
 
     else:
         print('Invalid username or password')

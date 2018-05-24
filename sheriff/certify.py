@@ -8,11 +8,11 @@ VALIDITY_INTERVAL = '-1m:+30m'
 # and what users get what permissions
 
 #def create_certificate(membership, username):
-def create_certificate(username, groups):
+def create_certificates(username, groups):
     public_key = ''
     cert_list = []
     for i in groups:
-        call(['ssh-keygen', '-s', '/opt/Sheriff/CA_keys/'+i+'id_rsa',
+        call(['ssh-keygen', '-s', '/opt/Sheriff/CA_keys/'+i+'_id_rsa',
         '-I', username, '-n', 'root', '-V', VALIDITY_INTERVAL,
         '/tmp/Sheriff_Public_Keys/id_rsa.pub'])
         # Have to rename the cert so it isn't overwritten. ssh-keygen -s doesnt let you determine the output file name
