@@ -17,20 +17,20 @@ def main():
     stdin.write(username + '\n')
     stdin.write(password + '\n')
     stdin.write(str(public_key) + '\n')
-    cert = stdout.readlines()[0]
+    cert = stdout.readlines()
     client.close()
     print('\n Public Key: ')
     print(public_key)
     print('\n Private Key: ')
     print(private_key)
     print('\n Certificate: ')
-    print(cert)
+    print(cert[0])
     with open('id_rsa.pub', 'wb') as public_file:
         public_file.write(public_key)
     with open('id_rsa', 'wb') as private_file:
         private_file.write(private_key)
     with open('id_rsa-cert.pub', 'w') as cert_file:
-        cert_file.write(cert)
+        cert_file.write(cert[0])
 
 
 main()

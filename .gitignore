@@ -9,3 +9,4 @@ deputy/id_rsa.pub
 *.pub
 /CA_keys/*
 CA_keys
+*.sh
