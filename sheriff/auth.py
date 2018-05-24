@@ -46,3 +46,9 @@ def get_user_membership(username, password):
             '(sAMAccountName=%s)'%username,
             attributes=['memberOf'])
         return conn.entries[0].memberOf
+
+def test():
+    server = Server(ACTIVE_DIRECTORY_SERVER)
+    user = ACTIVE_DIRECTORY_SERVER + '\\' + 'jack.daniels'
+    conn = Connection(server, user, 'Whi$key', authentication=NTLM)
+    return conn

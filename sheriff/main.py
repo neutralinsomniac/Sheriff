@@ -16,10 +16,10 @@ def main():
                 raise
     #TODO Error handling!
     if(auth_user(username, password)):
-        with open('/tmp/Sheriff_Public_Keys/temp.pub', 'w') as fl:
+        with open('/tmp/Sheriff_Public_Keys/id_rsa.pub', 'w') as fl:
             fl.write(publicKey[2:-1])# get rid of the singlequotes and b on the endpoints
         certify.create_certificate(username)
-        with open('/tmp/Sheriff_Public_Keys/temp-cert.pub', 'r') as cert:
+        with open('/tmp/Sheriff_Public_Keys/id_rsa-cert.pub', 'r') as cert:
             print(cert.read())
 
     else:
