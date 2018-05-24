@@ -8,6 +8,15 @@ DC = ['bastion', 'local']
 #ACTIVE_DIRECTORY_SERVER is a constant with the domain name of the active director server
 ACTIVE_DIRECTORY_SERVER = 'bastion.local'
 
+# connect(username, password) where:
+#   username is a string containing the username
+#   password is a string containing the password
+def connect(username, password):
+    server = Server(ACTIVE_DIRECTORY_SERVER)
+    user = ACTIVE_DIRECTORY_SERVER + '\\' + username
+    conn = Connection(server, user, password, authentication=NTLM)
+    return conn
+
 # build_search_base_string() builds the query string based on the DC constant.
 def build_search_base_string():
     search_base = ''
@@ -41,13 +50,9 @@ def get_user_membership(username, password):
         conn.search(build_search_base_string(),
             '(sAMAccountName=%s)'%username,
             attributes=['memberOf'])
-        return conn.entries[0].memberOf
-
-# connect(username, password) where:
-#   username is a string containing the username
-#   password is a string containing the password
-def connect(username, password):
-    server = Server(ACTIVE_DIRECTORY_SERVER)
-    user = ACTIVE_DIRECTORY_SERVER + '\\' + username
-    conn = Connection(server, user, password, authentication=NTLM)
-    return conn
+        raw_membership = conn.entries[0].memberOf
+        groups = []
+        for i in raw_membership.values:
+            groups.append(i.split(',')[0][3:])
+        return groups
+    return None
