@@ -28,12 +28,15 @@ def main():
     # print(private_key)
     # print('\n Certificate: ')
     # print(cert[0])
-    # with open('id_rsa.pub', 'wb') as public_file:
-    #     public_file.write(public_key)
-    # with open('id_rsa', 'wb') as private_file:
-    #     private_file.write(private_key)
-    # with open('id_rsa-cert.pub', 'w') as cert_file:
-    #     cert_file.write(cert[0])
-
+    if(cert[0] == "Invalid username or password"):
+        print(cert[0])
+        return
+    with open('id_rsa.pub', 'wb') as public_file:
+        public_file.write(public_key)
+    with open('id_rsa', 'wb') as private_file:
+        private_file.write(private_key)
+    for index in range(0, len(cert)):
+        with open('id_rsa_' + str(index) + '-cert.pub', 'w') as cert_file:
+            cert_file.write(cert[index])
 
 main()
