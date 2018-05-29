@@ -2,6 +2,7 @@
 from create_keys import create_keys
 import paramiko
 import config
+import ast
 
 def main():
     username = input('Username: ')
@@ -19,19 +20,20 @@ def main():
     stdin.write(password + '\n')
     stdin.write(str(public_key) + '\n')
     cert = stdout.readlines()
+    groups = ast.literal_eval(cert[0]) #TODO error check this with a member of 0 groups
+    cert = cert[1:] #TODO Error check this
     for i in cert:
-        print(i)
-        print('\n')
+       print(i)
     client.close()
     if(cert[0] == "Invalid username or password"):
         print(cert[0])
         return
-    with open('id_rsa.pub', 'wb') as public_file:
-        public_file.write(public_key)
-    with open('id_rsa', 'wb') as private_file:
-        private_file.write(private_key)
     for index in range(0, len(cert)):
-        with open('id_rsa_' + str(index) + '-cert.pub', 'w') as cert_file:
+        with open(groups[index] + '_id_rsa.pub', 'wb') as public_file:
+            public_file.write(public_key)
+        with open(groups[index] + '_id_rsa', 'wb') as private_file:
+            private_file.write(private_key)
+        with open(groups[index] + '_id_rsa-cert.pub', 'w') as cert_file:
             cert_file.write(cert[index])
 
 main()
