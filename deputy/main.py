@@ -1,6 +1,7 @@
 #! ../env/bin/python3
 from create_keys import create_keys
 import paramiko
+import config
 
 def main():
     username = input('Username: ')
@@ -11,8 +12,8 @@ def main():
     client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy)
     client.load_system_host_keys()
     # TODO make this authenticate with a keypair
-    client.connect('192.168.184.157', port=12345, username='sheriff_server',
-        password='test', allow_agent=False, look_for_keys=False)
+    client.connect(config.HOST_ADDRESS, port=config.HOST_PORT, username=config.CLIENT_USERNAME,
+        password=config.CLIENT_PASSWORD, allow_agent=False, look_for_keys=False)
     stdin, stdout, stderr = client.exec_command('')
     stdin.write(username + '\n')
     stdin.write(password + '\n')
@@ -22,12 +23,6 @@ def main():
         print(i)
         print('\n')
     client.close()
-    # print('\n Public Key: ')
-    # print(public_key)
-    # print('\n Private Key: ')
-    # print(private_key)
-    # print('\n Certificate: ')
-    # print(cert[0])
     if(cert[0] == "Invalid username or password"):
         print(cert[0])
         return
