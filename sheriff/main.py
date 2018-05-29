@@ -26,6 +26,7 @@ def main():
                 logging.warning('Temporary Directory was not cleared by last user')
     if(auth_user(username, password)):
         groups = get_user_membership(username, password)
+        print(groups)
         if(len(groups) == 0):
             logging.info('User: ' + username + ' is not a member of any known groups')
             print('User is not a member of any recognized groups')
