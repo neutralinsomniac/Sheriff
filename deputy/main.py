@@ -1,12 +1,13 @@
 #! ../env/bin/python3
 from create_keys import create_keys
 import paramiko
+import getpass
 import config
 import ast
 
 def main():
     username = input('Username: ')
-    password = input('Password: ')
+    password = getpass.getpass()
     private_key, public_key = create_keys()
 
     client = paramiko.SSHClient()
@@ -20,13 +21,13 @@ def main():
     stdin.write(password + '\n')
     stdin.write(str(public_key) + '\n')
     cert = stdout.readlines()
-    # groups = ast.literal_eval(cert[0]) #TODO error check this with a member of 0 groups
-    # cert = cert[1:] #TODO Error check this
     print(cert)
     client.close()
+
     if(len(cert) == 0 or cert[0] == "Invalid username or password"):
-        print(cert)
+        print(cert) #TODO need to handle this error better
         return
+        
     with open(username + '_id_rsa.pub', 'wb') as public_file:
         public_file.write(public_key)
     with open(username + '_id_rsa', 'wb') as private_file:
