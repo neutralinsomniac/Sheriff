@@ -20,20 +20,18 @@ def main():
     stdin.write(password + '\n')
     stdin.write(str(public_key) + '\n')
     cert = stdout.readlines()
-    groups = ast.literal_eval(cert[0]) #TODO error check this with a member of 0 groups
-    cert = cert[1:] #TODO Error check this
-    for i in cert:
-       print(i)
+    # groups = ast.literal_eval(cert[0]) #TODO error check this with a member of 0 groups
+    # cert = cert[1:] #TODO Error check this
+    print(cert)
     client.close()
-    if(cert[0] == "Invalid username or password"):
-        print(cert[0])
+    if(len(cert) == 0 or cert[0] == "Invalid username or password"):
+        print(cert)
         return
-    for index in range(0, len(cert)):
-        with open(groups[index] + '_id_rsa.pub', 'wb') as public_file:
-            public_file.write(public_key)
-        with open(groups[index] + '_id_rsa', 'wb') as private_file:
-            private_file.write(private_key)
-        with open(groups[index] + '_id_rsa-cert.pub', 'w') as cert_file:
-            cert_file.write(cert[index])
+    with open(username + '_id_rsa.pub', 'wb') as public_file:
+        public_file.write(public_key)
+    with open(username + '_id_rsa', 'wb') as private_file:
+        private_file.write(private_key)
+    with open(username + '_id_rsa-cert.pub', 'w') as cert_file:
+        cert_file.write(cert[0])
 
 main()
