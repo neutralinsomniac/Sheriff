@@ -13,6 +13,7 @@ def main():
     username = input()
     password = input()
     publicKey = input()
+
     logging.info('Received Connection from ' + username)
     if not os.path.exists(config.PUB_KEY_DIR_PATH):
         try:
@@ -33,7 +34,7 @@ def main():
         logging.info('Saving user public key in /tmp/Sheriff_Public_Keys/' + username +'_id_rsa.pub ')
         # Add username to public key to keep them unique
         with open(config.PUB_KEY_DIR_PATH + username +'_id_rsa.pub', 'w') as fl:
-            fl.write(publicKey[2:-1]) # get rid of the singlequotes and b on the endpoints
+            fl.write(publicKey) # get rid of the singlequotes and b on the endpoints
         logging.info('Creating certificate for user ' + username)
         cert_path = certify.create_certificates(username, groups)
         with open(cert_path, 'r') as cert:

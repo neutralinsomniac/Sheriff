@@ -24,5 +24,8 @@ def create_certificates(username, groups):
 
     # Have to rename the cert so it isn't overwritten. ssh-keygen -s doesnt let you determine the output file name
     new_cert = config.PUB_KEY_DIR_PATH + username + '_id_rsa-cert.pub'
-
+    if(os.path.isfile(new_cert)):
+        logging.info('Certificate: ' + new_cert + ' was successfully created')
+    else:
+        logging.warning('Certificate creation failed')
     return new_cert
