@@ -5,34 +5,40 @@ import getpass
 import config
 import ast
 
+'''
+Opens ssh process to certificate authority
+ssh session cannot be opened without signed key from CA
+
+Upon validation of LDAP credentials, private, public and
+certificate files are written to:
+
+<ldap-username>_id_rsa
+<ldap-username>_id_rsa.pub
+<ldap-username>_id_rsa-cert.pub
+
+respectively.
+'''
+
 def main():
     username = input('Username: ')
     password = getpass.getpass()
     private_key, public_key = create_keys()
+    args = ['ssh', 'sheriff_server@192.168.184.157', '-p', '12345']
 
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy)
-    client.load_system_host_keys()
-    # TODO make this authenticate with a keypair
-    client.connect(config.HOST_ADDRESS, port=config.HOST_PORT, username=config.CLIENT_USERNAME,
-        password=config.CLIENT_PASSWORD, allow_agent=False, look_for_keys=False)
-    stdin, stdout, stderr = client.exec_command('')
-    stdin.write(username + '\n')
-    stdin.write(password + '\n')
-    stdin.write(str(public_key) + '\n')
-    cert = stdout.readlines()
-    print(cert)
-    client.close()
+    with subprocess.Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True) as proc:
+        proc.stdin.write(username + '\n')
+        proc.stdin.write(password + '\n')
+        proc.stdin.write(publicKey.decode('utf-8')+'\n')
+        proc.stdin.flush()
+        sheriff_responses = proc.stdout.readlines()
 
-    if(len(cert) == 0 or cert[0] == "Invalid username or password"):
-        print(cert) #TODO need to handle this error better
-        return
-        
-    with open(username + '_id_rsa.pub', 'wb') as public_file:
-        public_file.write(public_key)
-    with open(username + '_id_rsa', 'wb') as private_file:
-        private_file.write(private_key)
+    with open(username + '_id_rsa', 'wb') as private_key_file:
+        privateKey_file.write(private_key)
+
+    with open(username + '_id_rsa.pub', 'wb') as public_key_file:
+        publicKey_file.write(public_key)
+
     with open(username + '_id_rsa-cert.pub', 'w') as cert_file:
-        cert_file.write(cert[0])
+        cert_file.write(sheriff_responses[-1])
 
 main()
