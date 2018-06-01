@@ -25,6 +25,7 @@ def main():
                 raise
             else:
                 logging.warning('Temporary Directory was not cleared by last user')
+                
     if(auth_user(username, password)):
         groups = get_user_membership(username, password)
         if(len(groups) == 0):
