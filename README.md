@@ -91,6 +91,9 @@ Run **python3 /deputy/main.py** at which point you will be prompted for a userna
 * < username >\_id\_rsa.pub (public key)
 * < username >\_id\_rsa-cert.pub (certificate file)
 
+The private key needs to have the permissions locked down. This can be done with:
+> chown 600 < username >\_id\_rsa (private key)
+
 These files should be copied to **~/.ssh/** and added with the following command:
 > ssh-add -t 30m < username >\_id\_rsa
 
