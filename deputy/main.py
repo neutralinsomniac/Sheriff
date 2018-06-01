@@ -32,6 +32,10 @@ def main():
         proc.stdin.flush()
         sheriff_responses = proc.stdout.readlines()
 
+    if(sheriff_responses[-1] == 'Invalid username or password'):
+        print(sheriff_responses[-1])
+        return
+
     with open(username + '_id_rsa', 'wb') as private_key_file:
         private_key_file.write(private_key)
 
