@@ -31,7 +31,7 @@ def main():
             logging.info('User: ' + username + ' is not a member of any known groups')
             print('User is not a member of any recognized groups')
             return
-        logging.info('Saving user public key in /tmp/Sheriff_Public_Keys/' + username +'_id_rsa.pub ')
+        logging.info('Saving user public key in '+ config.PUB_KEY_DIR_PATH + username +'_id_rsa.pub ')
         # Add username to public key to keep them unique
         with open(config.PUB_KEY_DIR_PATH + username +'_id_rsa.pub', 'w') as fl:
             fl.write(publicKey) # get rid of the singlequotes and b on the endpoints
