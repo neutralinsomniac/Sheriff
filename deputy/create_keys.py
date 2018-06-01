@@ -1,8 +1,7 @@
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend as crypto_default_backend
-from os import environ, chmod
-from subprocess import call
+from os import environ
 
 def create_keys():
     homedir = environ['HOME']
@@ -22,9 +21,5 @@ def create_keys():
         crypto_serialization.PublicFormat.OpenSSH
     )
 
-    #ssh_add_new_key(homedir + '/.ssh/id_rsa')
-
     return privkey, pubkey
 
-def ssh_add_new_key(keypath):
-    call(['ssh-add', keypath]) #Optional Silence: , '2>/dev/null'])
