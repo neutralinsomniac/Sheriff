@@ -41,10 +41,10 @@ def main():
         proc.stdin.flush()
         sheriff_responses = proc.stdout.readlines()
 
-    if(sheriff_responses[-1] == 'False'):
+    if(str(sheriff_responses[-1]) == 'False\n'):
         print('Invalid username/password: Certificate could not be created.')
         return
-        
+
     with open(username + '_id_rsa-cert.pub', 'w') as cert_file:
         cert_file.write(sheriff_responses[-1])
 
