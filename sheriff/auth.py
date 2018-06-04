@@ -32,7 +32,7 @@ def auth_user(username, password):
         logging.info('User: ' + username + ' successfully authenticated')
         return True
     else:
-        logging.Info('User: ' + username + ' provided invalid username/password')
+        logging.info('User: ' + username + ' provided invalid username/password')
         return False
 
 # get_user_membership(username, password) where:

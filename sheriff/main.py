@@ -25,14 +25,14 @@ def main():
                 raise
             else:
                 logging.warning('Temporary Directory was not cleared by last user')
-                
+
     if(auth_user(username, password)):
         groups = get_user_membership(username, password)
         if(len(groups) == 0):
             logging.info('User: ' + username + ' is not a member of any known groups')
             print('User is not a member of any recognized groups')
             return
-        logging.info('Saving user public key in '+ config.PUB_KEY_DIR_PATH + username +'_id_rsa.pub ')
+        logging.info('Saving user public key in ' + config.PUB_KEY_DIR_PATH + username + '_id_rsa.pub ')
         # Add username to public key to keep them unique
         with open(config.PUB_KEY_DIR_PATH + username +'_id_rsa.pub', 'w') as fl:
             fl.write(publicKey) # get rid of the singlequotes and b on the endpoints
@@ -42,7 +42,8 @@ def main():
             print(cert.read(), end='')
         call(['rm', '-rf', config.PUB_KEY_DIR_PATH])
     else:
-        print('Invalid username or password')
+        logging.info('User: ' + username + ' failed to authenticate.')
+        print('False')
         return
 
 main()
