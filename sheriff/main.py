@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python3
 from auth import auth_user, get_user_membership
 from subprocess import call
 import certify
